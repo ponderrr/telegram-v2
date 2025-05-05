@@ -1,0 +1,69 @@
+<%- include('layout', { body: `
+<h2>Your Dashboard</h2>
+<div class="row">
+  <div class="col-md-9">
+    <h3>Recent Messages from Subscribed Topics</h3>
+    <% if (topicsWithMessages.length === 0) { %>
+    <div class="alert alert-info">
+      You haven't subscribed to any topics yet.
+      <a href="/topics">Browse available topics</a> or
+      <a href="/topics/create">create a new topic</a>.
+    </div>
+    <% } else { %> <% topicsWithMessages.forEach(item => { %>
+    <div class="card topic-card">
+      <div
+        class="card-header d-flex justify-content-between align-items-center"
+      >
+        <h5 class="mb-0">
+          <a href="/topics/<%= item.topic._id %>"><%= item.topic.title %></a>
+        </h5>
+        <form action="/topics/<%= item.topic._id %>/unsubscribe" method="POST">
+          <button type="submit" class="btn btn-sm btn-outline-danger">
+            Unsubscribe
+          </button>
+        </form>
+      </div>
+      <div class="card-body">
+        <% if (item.messages.length === 0) { %>
+        <p class="text-muted">No messages in this topic yet.</p>
+        <% } else { %> <% item.messages.forEach(message => { %>
+        <div class="message-bubble">
+          <p><%= message.content %></p>
+          <div class="message-meta">
+            <span>Posted by <%= message.author.username %></span>
+            <span>• <%= new Date(message.createdAt).toLocaleString() %></span>
+          </div>
+        </div>
+        <% }) %>
+        <a
+          href="/topics/<%= item.topic._id %>"
+          class="btn btn-sm btn-outline-primary"
+          >View All Messages</a
+        >
+        <% } %>
+      </div>
+    </div>
+    <% }) %> <% } %>
+  </div>
+  <div class="col-md-3">
+    <div class="card">
+      <div class="card-header">
+        <h5>Quick Links</h5>
+      </div>
+      <div class="card-body">
+        <ul class="list-group">
+          <li class="list-group-item">
+            <a href="/topics">Browse All Topics</a>
+          </li>
+          <li class="list-group-item">
+            <a href="/topics/create">Create New Topic</a>
+          </li>
+          <li class="list-group-item">
+            <a href="/topics/stats">View Topic Statistics</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+` }) %>

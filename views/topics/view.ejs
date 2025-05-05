@@ -1,0 +1,68 @@
+<%- include('../layout', { body: `
+<div class="row">
+  <div class="col-md-12">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="/topics">Topics</a></li>
+        <li class="breadcrumb-item active">${topic.title}</li>
+      </ol>
+    </nav>
+    <div class="card mb-4">
+      <div class="card-header">
+        <h3>${topic.title}</h3>
+      </div>
+      <div class="card-body">
+        <p>${topic.description}</p>
+        <div class="d-flex justify-content-between">
+          <small
+            >Created by ${topic.creator.username} • ${new
+            Date(topic.createdAt).toLocaleDateString()}</small
+          >
+          <small>${topic.subscribers.length} subscribers</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header">
+        <h4>Post a Message</h4>
+      </div>
+      <div class="card-body">
+        <form action="/topics/${topic._id}/messages" method="POST">
+          <div class="mb-3">
+            <textarea
+              class="form-control"
+              name="content"
+              rows="3"
+              required
+            ></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Post Message</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h4>Messages</h4>
+      </div>
+      <div class="card-body">
+        <% if (messages.length === 0) { %>
+        <div class="alert alert-info">
+          No messages in this topic yet. Be the first to post!
+        </div>
+        <% } else { %> <% messages.forEach(message => { %>
+        <div class="message-bubble">
+          <p>${message.content}</p>
+          <div class="message-meta">
+            <span>Posted by ${message.author.username}</span>
+            <span>• ${new Date(message.createdAt).toLocaleString()}</span>
+          </div>
+        </div>
+        <% }) %> <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+` }) %>
