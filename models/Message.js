@@ -1,7 +1,7 @@
 const moongoose = require("mongoose");
 
 const MessageSchema = new moongoose.Schema({
-  context: {
+  content: {
     type: String,
     required: true,
     trim: true,
