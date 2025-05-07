@@ -1,0 +1,79 @@
+<h2>Topic Access Statistics</h2>
+
+<div class="card">
+  <div class="card-header">
+    <h4>Number of Times Each Topic Has Been Accessed</h4>
+  </div>
+  <div class="card-body">
+    <% if (topics.length === 0) { %>
+    <div class="alert alert-info">No topics available yet.</div>
+    <% } else { %>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">Topic</th>
+          <th scope="col">Created By</th>
+          <th scope="col">Creation Date</th>
+          <th scope="col">Subscribers</th>
+          <th scope="col">Access Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% topics.forEach(function(topic) { %>
+        <tr>
+          <td><a href="/topics/<%= topic._id %>"><%= topic.title %></a></td>
+          <td><%= topic.creator ? topic.creator.username : 'Unknown' %></td>
+          <td><%= new Date(topic.createdAt).toLocaleDateString() %></td>
+          <td><%= topic.subscribers ? topic.subscribers.length : 0 %></td>
+          <td><%= topic.accessCount || 0 %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+
+    <div class="mt-4">
+      <canvas id="topicStatsChart"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('topicStatsChart').getContext('2d');
+
+        // Prepare data for chart
+        const topicTitles = [
+          <% topics.forEach(function(topic, index) { %>
+            '<%= topic.title %>'<%= index < topics.length - 1 ? ',' : '' %>
+          <% }) %>
+        ];
+
+        const accessCounts = [<% topics.forEach(function(topic, index) { %>
+          <%= topic.accessCount || 0 %><%= index < topics.length - 1 ? ',' : '' %>
+        <% }); %>];
+
+        // Create chart
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: topicTitles,
+            datasets: [{
+              label: 'Access Count',
+              data: accessCounts,
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      });
+    </script>
+    <% } %>
+  </div>
+</div>
