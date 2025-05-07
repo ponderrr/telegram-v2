@@ -40,12 +40,14 @@ const messageController = {
 
       await message.save();
 
-      // Notify observers
-      topicSubject
-        .setTopic(topic)
-        .setAction("new_message")
-        .setMessage(message)
-        .notifyObservers();
+      // Notify observers (if implemented)
+      if (topicSubject) {
+        topicSubject
+          .setTopic(topic)
+          .setAction("new_message")
+          .setMessage(message)
+          .notifyObservers();
+      }
 
       res.redirect(`/topics/${topicId}`);
     } catch (err) {
@@ -95,7 +97,9 @@ const messageController = {
       return topicsWithMessages.filter((item) => item.topic);
     } catch (err) {
       console.error(err);
-      throw new Error("Failed to get recent messages");
+      return []; // Return empty array instead of throwing an error
     }
   },
 };
+
+module.exports = messageController;
