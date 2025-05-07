@@ -70,13 +70,6 @@ class UserNotifier extends Observer {
   update(subject, data) {
     console.log(`Notification for topic "${data.topic.title}": ${data.action}`);
 
-    // In a real implementation, you would add code here to:
-    // 1. Send email notifications to subscribers
-    // 2. Update UI notifications
-    // 3. Send push notifications
-    // etc.
-
-    // For now, we'll just log the notification
     if (data.action === "new_message" && data.message) {
       console.log(
         `New message in topic "${data.topic.title}" from ${data.message.author.username}`

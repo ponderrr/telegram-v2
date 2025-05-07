@@ -1,10 +1,7 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-/**
- * Database Singleton Class
- * Implements Singleton pattern to ensure only one database connection is created
- */
+//Database connection class
 class Database {
   constructor() {
     if (Database.instance) {
@@ -49,9 +46,6 @@ class Database {
     return this.connection;
   }
 
-  /**
-   * Close the database connection
-   */
   async close() {
     if (this.connection) {
       await mongoose.connection.close();

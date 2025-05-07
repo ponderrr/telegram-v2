@@ -9,7 +9,6 @@ const messageController = {
       const { content } = req.body;
       const topicId = req.params.id;
 
-      // Check if topic exists
       const topic = await Topic.findById(topicId);
       if (!topic) {
         return res.status(404).render("error", {
@@ -18,7 +17,6 @@ const messageController = {
         });
       }
 
-      // Check if user is subscribed to topic
       const user = await User.findById(req.user.id);
       const isSubscribed = user.subscribedTopics.some(
         (id) => id.toString() === topicId
@@ -31,7 +29,6 @@ const messageController = {
         });
       }
 
-      // Create message
       const message = new Message({
         content,
         author: req.user.id,
@@ -40,7 +37,6 @@ const messageController = {
 
       await message.save();
 
-      // Notify observers (if implemented)
       if (topicSubject) {
         topicSubject
           .setTopic(topic)
@@ -61,7 +57,6 @@ const messageController = {
 
   getRecentMessages: async (userId) => {
     try {
-      // Get user's subscribed topics
       const user = await User.findById(userId);
 
       if (
@@ -72,7 +67,6 @@ const messageController = {
         return [];
       }
 
-      // For each topic, get the 2 most recent messages
       const topicsWithMessages = await Promise.all(
         user.subscribedTopics.map(async (topicId) => {
           const topic = await Topic.findById(topicId);
@@ -93,11 +87,10 @@ const messageController = {
         })
       );
 
-      // Filter out any null topics (might happen if a topic was deleted)
       return topicsWithMessages.filter((item) => item.topic);
     } catch (err) {
       console.error(err);
-      return []; // Return empty array instead of throwing an error
+      return [];
     }
   },
 };
