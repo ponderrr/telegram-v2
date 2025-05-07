@@ -1,0 +1,74 @@
+<h2>All Topics</h2>
+<div class="row">
+  <div class="col-md-9">
+    <% if (topics.length === 0) { %>
+    <div class="alert alert-info">
+      No topics available yet.
+      <a href="/topics/create">Create the first topic</a>.
+    </div>
+    <% } else { %>
+    <div class="list-group">
+      <% topics.forEach(topic => { %>
+      <div
+        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+      >
+        <div>
+          <a href="/topics/<%= topic._id %>" class="fw-bold"
+            ><%= topic.title %></a
+          >
+          <% if (topic.description) { %>
+          <p class="mb-1 text-muted"><%= topic.description %></p>
+          <% } %>
+          <small>
+            Created by <%= topic.creator ? topic.creator.username : 'Unknown' %>
+            • <%= new Date(topic.createdAt).toLocaleDateString() %> • <%=
+            topic.subscribers.length %> subscribers
+          </small>
+        </div>
+
+        <% if (typeof user !== 'undefined' && user) { %> <% var isSubscribed =
+        false; if (user.subscribedTopics) { isSubscribed =
+        user.subscribedTopics.some(function(id) { return id.toString() ===
+        topic._id.toString(); }); } %> <% if (!isSubscribed) { %>
+        <form action="/topics/<%= topic._id %>/subscribe" method="POST">
+          <button type="submit" class="btn btn-sm btn-outline-primary">
+            Subscribe
+          </button>
+        </form>
+        <% } else { %>
+        <form action="/topics/<%= topic._id %>/unsubscribe" method="POST">
+          <button type="submit" class="btn btn-sm btn-outline-danger">
+            Unsubscribe
+          </button>
+        </form>
+        <% } %> <% } else { %>
+        <a href="/login" class="btn btn-sm btn-outline-primary"
+          >Login to Subscribe</a
+        >
+        <% } %>
+      </div>
+      <% }) %>
+    </div>
+    <% } %>
+  </div>
+  <div class="col-md-3">
+    <div class="card">
+      <div class="card-header">
+        <h5>Quick Links</h5>
+      </div>
+      <div class="card-body">
+        <ul class="list-group">
+          <li class="list-group-item">
+            <a href="/dashboard">Back to Dashboard</a>
+          </li>
+          <li class="list-group-item">
+            <a href="/topics/create">Create New Topic</a>
+          </li>
+          <li class="list-group-item">
+            <a href="/topics/stats">View Topic Statistics</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

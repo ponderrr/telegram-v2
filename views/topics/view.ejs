@@ -1,35 +1,58 @@
-<%- include('../layout', { body: `
 <div class="row">
   <div class="col-md-12">
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
         <li class="breadcrumb-item"><a href="/topics">Topics</a></li>
-        <li class="breadcrumb-item active">${topic.title}</li>
+        <li class="breadcrumb-item active"><%= topic.title %></li>
       </ol>
     </nav>
+
     <div class="card mb-4">
-      <div class="card-header">
-        <h3>${topic.title}</h3>
+      <div
+        class="card-header d-flex justify-content-between align-items-center"
+      >
+        <h3><%= topic.title %></h3>
+        <% if (typeof user !== 'undefined' && user) { %> <% var isSubscribed =
+        false; if (user.subscribedTopics) { isSubscribed =
+        user.subscribedTopics.some(function(id) { return id.toString() ===
+        topic._id.toString(); }); } %> <% if (!isSubscribed) { %>
+        <form action="/topics/<%= topic._id %>/subscribe" method="POST">
+          <button type="submit" class="btn btn-primary">Subscribe</button>
+        </form>
+        <% } else { %>
+        <form action="/topics/<%= topic._id %>/unsubscribe" method="POST">
+          <button type="submit" class="btn btn-outline-danger">
+            Unsubscribe
+          </button>
+        </form>
+        <% } %> <% } else { %>
+        <a href="/login" class="btn btn-primary">Login to Subscribe</a>
+        <% } %>
       </div>
       <div class="card-body">
-        <p>${topic.description}</p>
+        <% if (topic.description) { %>
+        <p><%= topic.description %></p>
+        <% } %>
         <div class="d-flex justify-content-between">
-          <small
-            >Created by ${topic.creator.username} • ${new
-            Date(topic.createdAt).toLocaleDateString()}</small
-          >
-          <small>${topic.subscribers.length} subscribers</small>
+          <small>
+            Created by <%= topic.creator.username %> • <%= new
+            Date(topic.createdAt).toLocaleDateString() %>
+          </small>
+          <small><%= topic.subscribers.length %> subscribers</small>
         </div>
       </div>
     </div>
 
+    <% var canPost = false; if (typeof user !== 'undefined' && user &&
+    user.subscribedTopics) { canPost = user.subscribedTopics.some(function(id) {
+    return id.toString() === topic._id.toString(); }); } %> <% if (canPost) { %>
     <div class="card mb-4">
       <div class="card-header">
         <h4>Post a Message</h4>
       </div>
       <div class="card-body">
-        <form action="/topics/${topic._id}/messages" method="POST">
+        <form action="/topics/<%= topic._id %>/messages" method="POST">
           <div class="mb-3">
             <textarea
               class="form-control"
@@ -42,6 +65,7 @@
         </form>
       </div>
     </div>
+    <% } %>
 
     <div class="card">
       <div class="card-header">
@@ -50,14 +74,15 @@
       <div class="card-body">
         <% if (messages.length === 0) { %>
         <div class="alert alert-info">
-          No messages in this topic yet. Be the first to post!
+          No messages in this topic yet. <% if (canPost) { %> Be the first to
+          post! <% } else { %> Subscribe to post messages. <% } %>
         </div>
         <% } else { %> <% messages.forEach(message => { %>
         <div class="message-bubble">
-          <p>${message.content}</p>
+          <p><%= message.content %></p>
           <div class="message-meta">
-            <span>Posted by ${message.author.username}</span>
-            <span>• ${new Date(message.createdAt).toLocaleString()}</span>
+            <span>Posted by <%= message.author.username %></span>
+            <span>• <%= new Date(message.createdAt).toLocaleString() %></span>
           </div>
         </div>
         <% }) %> <% } %>
@@ -65,4 +90,3 @@
     </div>
   </div>
 </div>
-` }) %>

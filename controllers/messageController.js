@@ -7,58 +7,77 @@ const messageController = {
   createMessage: async (req, res) => {
     try {
       const { content } = req.body;
-      const topicId = req.params.topicId;
+      const topicId = req.params.id;
 
+      // Check if topic exists
       const topic = await Topic.findById(topicId);
       if (!topic) {
-        return res.status(404).json({ message: "Topic not found" });
+        return res.status(404).render("error", {
+          user: req.user,
+          error: "Topic not found",
+        });
       }
-      // check if user subscribed
+
+      // Check if user is subscribed to topic
       const user = await User.findById(req.user.id);
       const isSubscribed = user.subscribedTopics.some(
         (id) => id.toString() === topicId
       );
 
       if (!isSubscribed) {
-        return res.status(403).json({
-          message: "You must be subscribed to post in this topic",
+        return res.status(403).render("error", {
+          user: req.user,
+          error: "You must be subscribed to post in this topic",
         });
       }
 
-      const newMessage = new Message({
+      // Create message
+      const message = new Message({
         content,
         author: req.user.id,
         topic: topicId,
       });
 
-      await newMessage.save();
+      await message.save();
 
-      const populatedMessage = await Message.findById(newMessage._id).populate(
-        "author",
-        "username"
-      );
-
+      // Notify observers
       topicSubject
         .setTopic(topic)
         .setAction("new_message")
-        .setMessage(populatedMessage)
+        .setMessage(message)
         .notifyObservers();
 
       res.redirect(`/topics/${topicId}`);
     } catch (err) {
       console.error(err);
-      res.status(500).json({ message: "Server error" });
+      res.status(500).render("error", {
+        user: req.user,
+        error: "Server error",
+      });
     }
   },
 
   getRecentMessages: async (userId) => {
     try {
+      // Get user's subscribed topics
       const user = await User.findById(userId);
 
-      // get 2 most recent messages
+      if (
+        !user ||
+        !user.subscribedTopics ||
+        user.subscribedTopics.length === 0
+      ) {
+        return [];
+      }
+
+      // For each topic, get the 2 most recent messages
       const topicsWithMessages = await Promise.all(
         user.subscribedTopics.map(async (topicId) => {
           const topic = await Topic.findById(topicId);
+
+          if (!topic) {
+            return { topic: { title: "Deleted Topic" }, messages: [] };
+          }
 
           const messages = await Message.find({ topic: topicId })
             .sort({ createdAt: -1 })
@@ -72,12 +91,11 @@ const messageController = {
         })
       );
 
-      return topicsWithMessages;
+      // Filter out any null topics (might happen if a topic was deleted)
+      return topicsWithMessages.filter((item) => item.topic);
     } catch (err) {
       console.error(err);
       throw new Error("Failed to get recent messages");
     }
   },
 };
-
-module.exports = messageController;

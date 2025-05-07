@@ -1,39 +1,52 @@
-const express = require('express');
-const path = require('path');
-const cookieParser = require('cookie-parser');
-const logger = require('morgan');
-const database = require('./config/db');
-const authRoutes = require('./routes/authRoutes');
-const topicRoutes = require('./routes/topicRoutes');
-const messageRoutes = require('./routes/messageRoutes');
+const express = require("express");
+const path = require("path");
+const cookieParser = require("cookie-parser");
+const logger = require("morgan");
+const expressLayouts = require("express-ejs-layouts");
+const database = require("./config/db");
+const authRoutes = require("./routes/authRoutes");
+const topicRoutes = require("./routes/topicRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 
+// Initialize express app
 const app = express();
 
-// singleton
+// Connect to database using Singleton
 database.connect();
 
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+// View engine setup
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
 
-app.use(logger('dev'));
+// Setup express-ejs-layouts
+app.use(expressLayouts);
+app.set("layout", "layout");
+app.set("layout extractScripts", true);
+
+// Middleware
+app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
-app.use('/', authRoutes);
-app.use('/topics', topicRoutes);
-app.use('/', messageRoutes);
+// Routes
+app.use("/", authRoutes);
+app.use("/topics", topicRoutes);
+app.use("/", messageRoutes);
 
-app.get('/', (req, res) => {
-  res.redirect('/login');
+// Home route redirect to login
+app.get("/", (req, res) => {
+  res.redirect("/login");
 });
 
+// Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send('Something broke!');
+  res.status(500).send("Something broke!");
 });
 
+// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
