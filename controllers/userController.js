@@ -14,10 +14,10 @@ const userController = {
 
   registerUser: async (req, res) => {
     try {
-      const { username, email, password } = req.body;
+      const { username, password } = req.body;
 
       // Check if user already exists
-      let user = await User.findOne({ email });
+      let user = await User.findOne({ username });
       if (user) {
         return res.render("auth/register", {
           user: null,
@@ -28,7 +28,6 @@ const userController = {
       // Create new user
       user = new User({
         username,
-        email,
         password,
       });
 
@@ -132,4 +131,5 @@ const userController = {
     }
   },
 };
+
 module.exports = userController;
