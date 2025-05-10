@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const messageController = require("./messageController");
 
 const userController = {
-  // Authentication
   getLoginPage: (req, res) => {
     res.render("auth/login", { user: null });
   },
@@ -16,7 +15,6 @@ const userController = {
     try {
       const { username, password } = req.body;
 
-      // Check if user already exists
       let user = await User.findOne({ username });
       if (user) {
         return res.render("auth/register", {
@@ -25,7 +23,6 @@ const userController = {
         });
       }
 
-      // Create new user
       user = new User({
         username,
         password,
@@ -33,17 +30,15 @@ const userController = {
 
       await user.save();
 
-      // Generate JWT token
       const token = jwt.sign(
         { id: user.id },
         process.env.JWT_SECRET || "secret_token",
         { expiresIn: "1d" }
       );
 
-      // Set token cookie
       res.cookie("token", token, {
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
+        maxAge: 24 * 60 * 60 * 1000,
       });
 
       res.redirect("/dashboard");
@@ -60,7 +55,6 @@ const userController = {
     try {
       const { username, password } = req.body;
 
-      // Check if user exists
       const user = await User.findOne({ username });
       if (!user) {
         return res.render("auth/login", {
@@ -69,7 +63,6 @@ const userController = {
         });
       }
 
-      // Check password
       const isMatch = await user.comparePassword(password);
       if (!isMatch) {
         return res.render("auth/login", {
@@ -78,17 +71,15 @@ const userController = {
         });
       }
 
-      // Generate JWT token
       const token = jwt.sign(
         { id: user.id },
         process.env.JWT_SECRET || "secret_token",
         { expiresIn: "1d" }
       );
 
-      // Set token cookie
       res.cookie("token", token, {
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
+        maxAge: 24 * 60 * 60 * 1000,
       });
 
       res.redirect("/dashboard");
@@ -108,12 +99,10 @@ const userController = {
 
   getDashboard: async (req, res) => {
     try {
-      // Get user's subscribed topics
       const user = await User.findById(req.user.id).populate(
         "subscribedTopics"
       );
 
-      // Get 2 most recent messages for each subscribed topic
       const topicsWithMessages = await messageController.getRecentMessages(
         req.user.id
       );

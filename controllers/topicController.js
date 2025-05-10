@@ -8,7 +8,6 @@ const topicController = {
     try {
       const topics = await Topic.find().populate("creator", "username");
 
-      // Important: Always pass the user object
       res.render("topics/all", {
         topics,
         user: req.user,
@@ -35,16 +34,13 @@ const topicController = {
         });
       }
 
-      // Increment access count using Observer pattern
       await topic.incrementAccessCount();
       topicSubject.setTopic(topic).setAction("access").notifyObservers();
 
-      // Get messages for this topic
       const messages = await Message.find({ topic: topic._id })
         .sort({ createdAt: -1 })
         .populate("author", "username");
 
-      // Important: Always pass the user object
       res.render("topics/view", {
         topic,
         messages,
@@ -67,7 +63,6 @@ const topicController = {
     try {
       const { title, description } = req.body;
 
-      // Check if topic already exists
       const existingTopic = await Topic.findOne({ title });
       if (existingTopic) {
         return res.render("topics/create", {
@@ -76,22 +71,19 @@ const topicController = {
         });
       }
 
-      // Create new topic
       const newTopic = new Topic({
         title,
         description,
         creator: req.user.id,
-        subscribers: [req.user.id], // Creator is automatically subscribed
+        subscribers: [req.user.id],
       });
 
       await newTopic.save();
 
-      // Update user's subscribed topics
       await User.findByIdAndUpdate(req.user.id, {
         $push: { subscribedTopics: newTopic._id },
       });
 
-      // Notify observers
       topicSubject.setTopic(newTopic).setAction("created").notifyObservers();
 
       res.redirect("/dashboard");
@@ -108,7 +100,6 @@ const topicController = {
     try {
       const topicId = req.params.id;
 
-      // Check if topic exists
       const topic = await Topic.findById(topicId);
       if (!topic) {
         return res.status(404).render("error", {
@@ -117,12 +108,10 @@ const topicController = {
         });
       }
 
-      // Update user's subscribed topics
       await User.findByIdAndUpdate(req.user.id, {
         $addToSet: { subscribedTopics: topicId },
       });
 
-      // Update topic's subscribers
       await Topic.findByIdAndUpdate(topicId, {
         $addToSet: { subscribers: req.user.id },
       });
@@ -141,12 +130,10 @@ const topicController = {
     try {
       const topicId = req.params.id;
 
-      // Update user's subscribed topics
       await User.findByIdAndUpdate(req.user.id, {
         $pull: { subscribedTopics: topicId },
       });
 
-      // Update topic's subscribers
       await Topic.findByIdAndUpdate(topicId, {
         $pull: { subscribers: req.user.id },
       });
